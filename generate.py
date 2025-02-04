@@ -64,7 +64,7 @@ def generate_node_page(node, parent_path, output_dir, depth):
     left_link_html = f'<a class="circle-link" href="left/index.html">Left</a>'
     right_link_html = f'<a class="circle-link" href="right/index.html">Right</a>'
 
-    parent_link_html = (f'<a class="circle-link" href="{parent_path}">Back to Parent</a>'
+    parent_link_html = (f'<a class="circle-link" href="{parent_path}">Return to Parent</a>'
                         if parent_path else '')
 
     # Build the HTML content
@@ -108,7 +108,7 @@ def generate_null_page(output_dir, parent_path):
 <body>
     <h1 class="node-value">null</h1>
     <nav>
-        <a class="circle-link" href="{parent_path}">Back to Parent</a>
+        <a class="circle-link" href="{parent_path}">Return to Parent</a>
     </nav>
 </body>
 </html>
@@ -130,7 +130,7 @@ def generate_tree_pages(node, output_dir, parent_path=None, depth=0):
     :param depth: Depth of this node from the root (root=0, child=1, grandchild=2, etc.)
     """
     if node is None:
-        # If the node is null, just make a placeholder page with a "Back to Parent" link
+        # If the node is null, just make a placeholder page with a "Return to Parent" link
         os.makedirs(output_dir, exist_ok=True)
         generate_null_page(output_dir, parent_path)
         return
