@@ -60,17 +60,12 @@ def generate_node_page(node, parent_path, output_dir, depth):
     """
     css_rel_path = get_css_path(depth)
 
-    # Construct the three links: Left, Parent, Right.
-    # Place "Back to Parent" in the middle between Left and Right.
-
-    left_link_html = (f'<a class="circle-link" href="left/index.html">Left</a>'
-                      if node.left else '')
+    # Determine child links (either to actual child or null page)
+    left_link_html = f'<a class="circle-link" href="left/index.html">Left</a>'
+    right_link_html = f'<a class="circle-link" href="right/index.html">Right</a>'
 
     parent_link_html = (f'<a class="circle-link" href="{parent_path}">Back to Parent</a>'
                         if parent_path else '')
-
-    right_link_html = (f'<a class="circle-link" href="right/index.html">Right</a>'
-                       if node.right else '')
 
     # Build the HTML content
     html_content = f"""<!DOCTYPE html>
@@ -95,17 +90,49 @@ def generate_node_page(node, parent_path, output_dir, depth):
     with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
 
+
+def generate_null_page(output_dir, parent_path):
+    """
+    Generate an 'index.html' page for a null node.
+    
+    :param output_dir: The folder where this node's page is stored
+    :param parent_path: Relative path to this node's parent index.html
+    """
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Null</title>
+    <link rel="stylesheet" href="{get_css_path(output_dir.count(os.sep))}">
+</head>
+<body>
+    <h1 class="node-value">null</h1>
+    <nav>
+        <a class="circle-link" href="{parent_path}">Back to Parent</a>
+    </nav>
+</body>
+</html>
+"""
+
+    # Write out the HTML to index.html
+    with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
+        f.write(html_content)
+
 def generate_tree_pages(node, output_dir, parent_path=None, depth=0):
     """
     Recursively create directories for the node, generate its index.html,
-    and do the same for the left and right children.
+    and do the same for the left and right children. Generates 'null' pages
+    where children are missing.
     
-    :param node: The current Node
+    :param node: The current Node (or None for null nodes)
     :param output_dir: The folder where this node's page is stored
-    :param parent_path: Relative path to this node's parent's index.html (None if root)
+    :param parent_path: Relative path to this node's parent's index.html
     :param depth: Depth of this node from the root (root=0, child=1, grandchild=2, etc.)
     """
-    if not node:
+    if node is None:
+        # If the node is null, just make a placeholder page with a "Back to Parent" link
+        os.makedirs(output_dir, exist_ok=True)
+        generate_null_page(output_dir, parent_path)
         return
 
     # Ensure the output directory exists
@@ -114,25 +141,22 @@ def generate_tree_pages(node, output_dir, parent_path=None, depth=0):
     # Generate this node's HTML page
     generate_node_page(node, parent_path, output_dir, depth)
 
-    # Generate left subtree if present
+    # Generate left subtree (or null page)
+    left_child_path = os.path.join(output_dir, "left")
+    left_parent_link = "../index.html"
     if node.left:
-        # The parent's index for the child is "../index.html"
-        generate_tree_pages(
-            node=node.left,
-            output_dir=os.path.join(output_dir, "left"),
-            parent_path="../index.html",
-            depth=depth+1
-        )
+        generate_tree_pages(node.left, left_child_path, left_parent_link, depth+1)
+    else:
+        generate_tree_pages(None, left_child_path, left_parent_link, depth+1)
 
-    # Generate right subtree if present
+    # Generate right subtree (or null page)
+    right_child_path = os.path.join(output_dir, "right")
+    right_parent_link = "../index.html"
     if node.right:
-        # The parent's index for the child is "../index.html"
-        generate_tree_pages(
-            node=node.right,
-            output_dir=os.path.join(output_dir, "right"),
-            parent_path="../index.html",
-            depth=depth+1
-        )
+        generate_tree_pages(node.right, right_child_path, right_parent_link, depth+1)
+    else:
+        generate_tree_pages(None, right_child_path, right_parent_link, depth+1)
+
 
 def create_css_file(output_folder):
     """
