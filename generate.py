@@ -21,8 +21,8 @@ def build_example_tree():
           9        15
          / \       / \
         5   2    -3   5
-         \           / \
-          7         13  22
+                       \
+                       22
     """
     root = Node(10)
     root.left = Node(9)
@@ -30,11 +30,9 @@ def build_example_tree():
 
     root.left.left = Node(5)
     root.left.right = Node(2)
-    root.left.left.right = Node(7)
 
     root.right.left = Node(-3)
     root.right.right = Node(5)
-    root.right.right.left = Node(13)
     root.right.right.right = Node(22)
 
     return root
